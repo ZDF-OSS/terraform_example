@@ -1,0 +1,33 @@
+name: Bootstrap Dev
+on:
+  workflow_dispatch:
+  push:
+    # the cdk synth of any branch will run against the NonLive account, and the
+    # deploy step, will only run against the dev branch with the if statement.
+    branches-ignore:
+      - main
+  pull_request:
+    branches-ignore:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v3
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::199385210850:role/github_action
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: setup tf
+        uses: hashicorp/setup-terraform@v2
+      - run: terraform init
